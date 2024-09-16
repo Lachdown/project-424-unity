@@ -13,6 +13,7 @@ namespace Perrinn424.AutopilotSystem
             Processed
         }
 
+        //public bool HasCompletedLap { get; private set; }
 
         [Header("References")]
         public RecordedLap recordedLap;
@@ -29,7 +30,7 @@ namespace Perrinn424.AutopilotSystem
 
         [SerializeField]
         private bool autoStart = false;
-        
+
         [SerializeField]
         private AutopilotStartup startup;
 
@@ -90,6 +91,18 @@ namespace Perrinn424.AutopilotSystem
             }
         }
 
+        /*
+        public void CompleteLap()
+        {
+            HasCompletedLap = true;
+        }
+
+        public void StartNewLap()
+        {
+            HasCompletedLap = false;
+        }
+        */
+
         private void UpdateAutopilotInOnStatus()
         {
             startup.IsStartup(ReferenceSpeed);
@@ -120,6 +133,13 @@ namespace Perrinn424.AutopilotSystem
             WriteInput(runningSample);
 
         }
+
+        /*
+        public float GetFinalLapTime()
+        {
+            return timer.currentLapTime;
+        }
+        */
 
         //TODO make private and use Property PlayingTime
         public override float CalculatePlayingTime()
@@ -169,7 +189,7 @@ namespace Perrinn424.AutopilotSystem
             Sample end = recordedLap[autopilotSearcher.EndIndex];
             float t = autopilotSearcher.Ratio;
             Sample interpolatedSample = Sample.Lerp(start, end, t);
-            
+
             return interpolatedSample;
         }
 
@@ -186,12 +206,24 @@ namespace Perrinn424.AutopilotSystem
             else
             {
                 vehicle.data.Set(Channel.Custom, Perrinn424Data.EnableProcessedInput, 1);
-                vehicle.data.Set(Channel.Custom, Perrinn424Data.InputDrsPosition, (int)(s.drsPosition*10.0f));
+                vehicle.data.Set(Channel.Custom, Perrinn424Data.InputDrsPosition, (int)(s.drsPosition * 10.0f));
                 vehicle.data.Set(Channel.Custom, Perrinn424Data.InputSteerAngle, (int)(s.steeringAngle * 10000.0f));
                 vehicle.data.Set(Channel.Custom, Perrinn424Data.InputMguThrottle, (int)(s.throttle * 100.0f));
                 vehicle.data.Set(Channel.Custom, Perrinn424Data.InputBrakePressure, (int)(s.brakePressure * 10000.0f));
                 vehicle.data.Set(Channel.Custom, Perrinn424Data.InputGear, 1); //TODO
             }
+        }
+        public void ChangeLapData(RecordedLap newLap)
+        {
+            Debug.Log("Changing lap data...");
+
+            recordedLap = newLap;
+            Debug.Log("New lap data set to: " + newLap);
+
+            // Reset or reinitialize any necessary variables here
+            // For example, if the AutopilotSearcher uses the recordedLap:
+            autopilotSearcher = new AutopilotSearcher(this, recordedLap);
+            Debug.Log("AutopilotSearcher reinitialized with new lap data.");
         }
 
         public override float CalculateDuration()
@@ -201,7 +233,7 @@ namespace Perrinn424.AutopilotSystem
 
         private void OnDrawGizmos()
         {
-            if(debugDrawer != null)
+            if (debugDrawer != null)
                 debugDrawer.Draw();
         }
 
